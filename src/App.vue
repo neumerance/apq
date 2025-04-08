@@ -1,4 +1,7 @@
 <template>
+  <section class="toolbar-section has-background-light">
+    <AppToolBar></AppToolBar>
+  </section>
   <section class="player-section">
     <div class="grid">
       <div class="cell">
@@ -26,6 +29,10 @@
   </section>
 </template>
 <style lang="scss" scoped>
+.toolbar-section {
+  height: 33px;
+  z-index: 1090;
+}
 .player-section {
   height: 44%;
 
@@ -39,7 +46,7 @@
   }
 }
 .play-queue {
-  height: 56%;
+  height: 50%;
 
   .grid {
     height: 100%;
@@ -72,6 +79,7 @@ import QueueTimeline from "@/components/QueueTimeline.vue";
 import Library from "@/components/Library.vue";
 import SectionTitle from "@/components/SectionTitle.vue";
 import ImportBay from "@/components/ImportBay.vue";
+import AppToolBar from "@/components/AppToolBar.vue";
 
 const previewVideoOptions = {
   autoplay: false,
