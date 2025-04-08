@@ -2,19 +2,25 @@
   <section class="player-section">
     <div class="grid">
       <div class="cell">
+        <SectionTitle title="Preview" />
         <video-player :options="previewVideoOptions" />
       </div>
       <div class="cell">
+        <SectionTitle title="Program" />
         <video-player :options="queueVideoOptions" />
       </div>
     </div>
   </section>
   <section class="play-queue">
     <div class="grid">
-      <div class="cell play-queue__timeline">
+      <div class="cell library-section play-queue__timeline pt-5">
+        <SectionTitle title="Library" />
+        <Library></Library>
+        <ImportBay></ImportBay>
       </div>
-      <div class="cell play-queue__timeline">
-        <QueueTimeline />
+      <div class="cell play-queue__timeline pt-5">
+        <SectionTitle title="Queue" />
+        <QueueTimeline></QueueTimeline>
       </div>
     </div>
   </section>
@@ -28,6 +34,7 @@
 
     .cell {
       height: 100%;
+      position: relative;
     }
   }
 }
@@ -42,19 +49,29 @@
     }
   }
 
+  .library-section {
+    height: 100%;
+    overflow-y: scroll;
+  }
+
   &__preview {
     height: 100%;
     overflow-y: scroll;
+    position: relative;
   }
   &__timeline {
     height: 100%;
     overflow-y: scroll;
+    position: relative;
   }
 }
 </style>
 <script setup>
-import VideoPlayer from '@/components/VideoPlayer.vue';
-import QueueTimeline from '@/components/QueueTimeline.vue';
+import VideoPlayer from "@/components/VideoPlayer.vue";
+import QueueTimeline from "@/components/QueueTimeline.vue";
+import Library from "@/components/Library.vue";
+import SectionTitle from "@/components/SectionTitle.vue";
+import ImportBay from "@/components/ImportBay.vue";
 
 const previewVideoOptions = {
   autoplay: false,
@@ -62,12 +79,11 @@ const previewVideoOptions = {
   width: 320,
   sources: [
     {
-      src:
-        '/src/components/video-placeholder.mp4',
-      type: 'video/mp4'
-    }
-  ]
-}
+      src: "/src/components/video-placeholder.mp4",
+      type: "video/mp4",
+    },
+  ],
+};
 
 const queueVideoOptions = {
   autoplay: true,
@@ -76,10 +92,9 @@ const queueVideoOptions = {
   width: 320,
   sources: [
     {
-      src:
-        '/src/components/video-placeholder.mp4',
-      type: 'video/mp4'
-    }
-  ]
-}
+      src: "/src/components/video-placeholder.mp4",
+      type: "video/mp4",
+    },
+  ],
+};
 </script>

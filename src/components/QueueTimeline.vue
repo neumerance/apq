@@ -137,7 +137,6 @@ const setNeedlePosition = () => {
       block: "center",
       inline: "center",
     });
-    console.log("kamote");
   };
   setTimeout(scrollToPosition, 2000);
   setInterval(scrollToPosition, 60000);

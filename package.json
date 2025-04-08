@@ -10,8 +10,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "build": "vite build && electron-forge package",
-    "lint": "echo \"No linting configured\"",
-    "dev": "concurrently \"vite\" \"electron-forge start\""
+    "lint": "echo \"No linting configured\""
   },
   "keywords": [],
   "author": {
