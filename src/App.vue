@@ -23,7 +23,7 @@
       </div>
       <div class="cell play-queue__timeline pt-5">
         <SectionTitle title="Queue" />
-        <QueueTimeline></QueueTimeline>
+        <QueueTimeline :enqueuedScenes="enqueuedScenes"></QueueTimeline>
       </div>
     </div>
   </section>
@@ -80,6 +80,16 @@ import Library from "@/components/Library.vue";
 import SectionTitle from "@/components/SectionTitle.vue";
 import ImportBay from "@/components/ImportBay.vue";
 import AppToolBar from "@/components/AppToolBar.vue";
+
+const now = new Date();
+const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+const enqueuedScenes = [
+  {
+    title: "Worship Service Playback Batch 2",
+    startTime: new Date(now.getTime() - 0.3 * 60 * 60 * 1000),
+    endTime: fourHoursLater,
+  },
+];
 
 const previewVideoOptions = {
   autoplay: false,

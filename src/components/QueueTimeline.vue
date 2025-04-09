@@ -18,6 +18,17 @@
           slot.date
         }}</span>
       </div>
+      <div
+        v-for="(scene, sceneIndex) in enqueuedScenes"
+        :key="`scene-index-${sceneIndex}`"
+        class="scenes"
+        :style="{
+          top: `${computePixels(startOfTimeline, scene.startTime)}px`,
+          height: `${computePixels(scene.startTime, scene.endTime)}px`,
+        }"
+      >
+        <h5 class="is-size-6 has-text-dark has-text-weight-bold">{{ scene.title }}</h5>
+      </div>
     </div>
   </div>
 </template>
@@ -65,10 +76,10 @@
       position: relative;
     }
 
-    .event {
+    .scenes {
       position: absolute;
-      left: 80px;
-      width: 200px;
+      left: 20%;
+      width: 40%;
       background: #def;
       border-left: 4px solid #39f;
       padding: 5px;
@@ -79,6 +90,10 @@
 </style>
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
+
+const props = defineProps({
+  enqueuedScenes: Array,
+});
 
 const timeSlots = ref([]);
 const needlePosition = ref("");
@@ -126,10 +141,15 @@ const createTimeSlots = () => {
   }
 };
 
+// Calculate pixels based on minutes * pixelPerMinute
+const computePixels = (startTime, endTime) => {
+  const minutes = Math.floor((endTime - startTime.getTime()) / 60000);
+  return minutes * pixelPerMinute.value;
+};
+
 // Set current needle position
 const setNeedlePosition = () => {
-  const minutes = Math.floor((now - startOfTimeline.getTime()) / 60000);
-  needlePosition.value = `${minutes * pixelPerMinute.value}px`;
+  needlePosition.value = `${computePixels(startOfTimeline, now)}px`;
 
   const scrollToPosition = () => {
     needleRef.value.scrollIntoView({
@@ -138,7 +158,7 @@ const setNeedlePosition = () => {
       inline: "center",
     });
   };
-  setTimeout(scrollToPosition, 2000);
+  setTimeout(scrollToPosition, 1000);
   setInterval(scrollToPosition, 60000);
 };
 
