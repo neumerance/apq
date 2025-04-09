@@ -109,7 +109,7 @@ const queueVideoOptions = {
   controls: false,
   loop: true,
   width: 320,
-  muted: true,
+  muted: false,
   sources: [
     {
       src: "/src/assets/video/placeholder.mp4",
