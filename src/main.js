@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
+import pythonWebsocketServer from './pythonWebsocketServer.js';
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -21,7 +22,10 @@ const createWindow = () => {
   }
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  pythonWebsocketServer.startPythonServer();
+  createWindow();
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()

@@ -12,6 +12,18 @@
     "build": "vite build && electron-forge package",
     "lint": "echo \"No linting configured\""
   },
+  "build": {
+    "extraResources": [
+      {
+        "from": "src/executables/main.py",
+        "to": "src/executables/main.py"
+      },
+      {
+        "from": "src/executables/video-websocket.py",
+        "to": "src/executables/video-websocket.py"
+      }
+    ]
+  },
   "keywords": [],
   "author": {
     "name": "JonJon",

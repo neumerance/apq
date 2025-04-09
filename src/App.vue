@@ -95,9 +95,10 @@ const previewVideoOptions = {
   autoplay: false,
   controls: true,
   width: 320,
+  muted: true,
   sources: [
     {
-      src: "/src/components/video-placeholder.mp4",
+      src: "/src/assets/video/no-signal.mp4",
       type: "video/mp4",
     },
   ],
@@ -108,9 +109,10 @@ const queueVideoOptions = {
   controls: false,
   loop: true,
   width: 320,
+  muted: true,
   sources: [
     {
-      src: "/src/components/video-placeholder.mp4",
+      src: "/src/assets/video/placeholder.mp4",
       type: "video/mp4",
     },
   ],
