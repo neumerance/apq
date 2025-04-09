@@ -1,2 +1,11 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+import { contextBridge, ipcRenderer } from 'electron'
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  sendFrame: (frame) => ipcRenderer.send('frame-data', frame),
+  onFrame: (callback) => ipcRenderer.on('frame-data', (event, data) => callback(data)),
+  openFullscreenDisplay: (displayInfo) => ipcRenderer.send('open-fullscreen-window', displayInfo),
+  getDisplays: () => ipcRenderer.invoke('get-displays'),
+  closeWindow: () => ipcRenderer.send('close-window')
+});

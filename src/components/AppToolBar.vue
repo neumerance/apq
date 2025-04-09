@@ -14,7 +14,7 @@
     <div
       class="app-tool-bar__display cell is-flex is-align-items-center is-justify-content-center"
     >
-      <button class="button is-success is-small">Fullscreen</button>
+      <FullScreen></FullScreen>
     </div>
     <div
       class="app-tool-bar__settings cell is-flex is-align-items-center is-justify-content-end"
@@ -36,5 +36,6 @@
 </style>
 <script setup>
 import DropdownMenu from "@/components/ToolBars/DropdownMenu.vue";
+import FullScreen from "@/components/ToolBars/FullScreen.vue";
 import AppIcon from "@/assets/icons/apq_icon_27x27.png";
 </script>
