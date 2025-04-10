@@ -1,32 +1,16 @@
 import { app, BrowserWindow, screen, ipcMain } from 'electron'
 import path from 'path'
-import OBSVirtualCameraController from './controllers/OBSVirtualCameraController.js';
+import OBSController from './controllers/OBSController.js';
+import AppWindowController from './controllers/AppWindowController.js';
 
-const OBSController = new OBSVirtualCameraController();
+const preloader = path.join(__dirname, 'preload.js');
+const distIndex = path.join(__dirname, 'dist/index.html');
 
-const createWindow = () => {
-  const win = new BrowserWindow({
-    width: 1280,
-    height: 720,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-    },
-  })
-
-  if (process.env.NODE_ENV === 'development') {
-    // Load the Vite dev server during development
-    win.loadURL('http://localhost:5173')  // Adjust if you use a different port
-  } else {
-    // In production, load the built files
-    win.loadFile(path.join(__dirname, 'dist/index.html'))
-  }
-}
+const obsController = new OBSController();
+const appWindowController = new AppWindowController(preloader, distIndex);
 
 app.whenReady().then(() => {
-  // pythonWebsocketServer.startPythonServer();
-  createWindow();
+  appWindowController.init();
 })
 
 let canvasWindow;
@@ -64,7 +48,7 @@ ipcMain.on('frame-data', async (event, frame) => {
     canvasWindow.setFullScreen(true);
   }
 
-  OBSController.receiveFrames(frame);
+  obsController.receiveFrames(frame);
 });
 
 // close canvas windows
@@ -80,8 +64,8 @@ ipcMain.handle('get-displays', () => {
 });
 
 ipcMain.handle('toggle-obs-virtual-cam', async (event, enableOBSVirtualCam) => {
-  if (enableOBSVirtualCam) await OBSController.initOBSHeadless();
-  await OBSController.toggleOBSVirtualCam(enableOBSVirtualCam)
+  if (enableOBSVirtualCam) await obsController.initOBSHeadless();
+  await obsController.toggleOBSVirtualCam(enableOBSVirtualCam)
 });
 
 app.on('window-all-closed', () => {
@@ -90,5 +74,5 @@ app.on('window-all-closed', () => {
 
 // Gracefully quit OBS when Electron app is closed
 app.on('quit', () => {
-  OBSController.quit();
+  obsController.quit();
 });

@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 import OBSWebSocket from "obs-websocket-js";
 import AppEmitter from '../helpers/AppEmitter';
 
-class OBSVirtualCameraController {
+class OBSController {
   static PLATFORM = os.platform();
   static DEFAULT_OBS_HEADLESS_ARGS = [
     '--startvirtualcam',
@@ -33,12 +33,12 @@ class OBSVirtualCameraController {
     try {
       if (this.obs) return;
 
-      if (OBSVirtualCameraController.PLATFORM === 'darwin') {
-        this.obs = spawn(OBSVirtualCameraController.DARWIN_OBS_PATH, OBSVirtualCameraController.DEFAULT_OBS_HEADLESS_ARGS);
-      } else if (OBSVirtualCameraController.PLATFORM === 'win32') {
-        this.obs = spawn(OBSVirtualCameraController.WIN32_OBS_PATH, OBSVirtualCameraController.DEFAULT_OBS_HEADLESS_ARGS);
-      } else if (OBSVirtualCameraController.PLATFORM === 'linux') {
-        this.obs = spawn(OBSVirtualCameraController.LINUX_OBS_PATH, OBSVirtualCameraController.DEFAULT_OBS_HEADLESS_ARGS);
+      if (OBSController.PLATFORM === 'darwin') {
+        this.obs = spawn(OBSController.DARWIN_OBS_PATH, OBSController.DEFAULT_OBS_HEADLESS_ARGS);
+      } else if (OBSController.PLATFORM === 'win32') {
+        this.obs = spawn(OBSController.WIN32_OBS_PATH, OBSController.DEFAULT_OBS_HEADLESS_ARGS);
+      } else if (OBSController.PLATFORM === 'linux') {
+        this.obs = spawn(OBSController.LINUX_OBS_PATH, OBSController.DEFAULT_OBS_HEADLESS_ARGS);
       } else {
         throw new Error("❌ Unsupported OS");
       }
@@ -58,13 +58,13 @@ class OBSVirtualCameraController {
   async initWebsocket() {
     console.log('🚀 initiating obs websocket 🎬');
 
-    const websocketURL = OBSVirtualCameraController.WEBSOCKET_URL;
-    const websocketPassword = OBSVirtualCameraController.WEBSOCKET_PASS
+    const websocketURL = OBSController.WEBSOCKET_URL;
+    const websocketPassword = OBSController.WEBSOCKET_PASS
     this.socket = new OBSWebSocket(websocketURL);
     this.socket.connect(websocketURL, websocketPassword).then(async (event) => {
       console.log('⚡️ WebSocket is connected:', event);
 
-      OBSVirtualCameraController.EMITTER.emit('WEBSOCKET_READY');
+      OBSController.EMITTER.emit('WEBSOCKET_READY');
     })
     .catch((error) => {
       console.error('Failed to connect to OBS WebSocket:', error);
@@ -91,13 +91,13 @@ class OBSVirtualCameraController {
 
   // Listeners start
   onOBSReady() {
-    OBSVirtualCameraController.EMITTER.on('OBS_READY', async () => {
+    OBSController.EMITTER.on('OBS_READY', async () => {
       await this.initWebsocket();
     });
   }
 
   onWebsocketReady() {
-    OBSVirtualCameraController.EMITTER.on('WEBSOCKET_READY', async () => {
+    OBSController.EMITTER.on('WEBSOCKET_READY', async () => {
       await this.initOBSSource();
       await this.disableOBSStudioMode();
       await this.toggleOBSVirtualCam();
@@ -111,7 +111,7 @@ class OBSVirtualCameraController {
       if (data.includes('Camera Extension activated successfully')) {
         console.log('✅ OBS Virtual Cam started, ready to go!');
 
-        OBSVirtualCameraController.EMITTER.emit('OBS_READY');
+        OBSController.EMITTER.emit('OBS_READY');
       }
     });
 
@@ -131,7 +131,7 @@ class OBSVirtualCameraController {
   // checkers start
   async isSceneExists() {
     const scenes = await this.socket.call('GetSceneList');
-    return scenes.scenes.some(scene => scene.sceneName === OBSVirtualCameraController.SCENE_NAME);
+    return scenes.scenes.some(scene => scene.sceneName === OBSController.SCENE_NAME);
   }
   // checkers end
 
@@ -152,30 +152,30 @@ class OBSVirtualCameraController {
 
   async createScene() {
     await this.socket.call('CreateScene', {
-      sceneName: OBSVirtualCameraController.SCENE_NAME
+      sceneName: OBSController.SCENE_NAME
     });
   }
 
   async createInput() {
     await this.socket.call('CreateInput', {
-      sceneName: OBSVirtualCameraController.SCENE_NAME,
-      inputName: OBSVirtualCameraController.INPUT_NAME,
+      sceneName: OBSController.SCENE_NAME,
+      inputName: OBSController.INPUT_NAME,
       inputKind: 'image_source',
       inputSettings: {
-        file: OBSVirtualCameraController.TEMP_FILE
+        file: OBSController.TEMP_FILE
       }
     });
   }
 
   async setCurrentProgram() {
     await this.socket.call('SetCurrentProgramScene', {
-      sceneName: OBSVirtualCameraController.SCENE_NAME,
+      sceneName: OBSController.SCENE_NAME,
     });
   }
 
   async setInputSettings(frame) {
     await this.socket.call('SetInputSettings', {
-      inputName: OBSVirtualCameraController.INPUT_NAME,
+      inputName: OBSController.INPUT_NAME,
       inputKind: 'image_source',
       inputSettings: {
         file: frame
@@ -205,4 +205,4 @@ class OBSVirtualCameraController {
   // methods end
 }
 
-export default OBSVirtualCameraController;
+export default OBSController;
