@@ -49,7 +49,6 @@
     "obs-websocket-js": "^5.0.6",
     "sass": "^1.86.3",
     "sass-loader": "^16.0.5",
-    "sharp": "^0.34.1",
     "style-loader": "^4.0.0",
     "utf-8-validate": "^5.0.10",
     "video.js": "^8.22.0",

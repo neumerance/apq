@@ -11,12 +11,34 @@ const sharp = require('sharp');
 const tempFilePath = path.join(os.tmpdir(), "obs_temp_image.jpg");
 let obsHeadless;
 let obsWebsocket;
-let ffmpeg;
 let obsWebsocketInitialized = false;
 
 const launchObsHeadless = () => {
   // Launch OBS in headless mode
-  obsHeadless = spawn('/Applications/OBS.app/Contents/MacOS/obs', ['--startvirtualcam', '--minimize-to-tray', '--no-browser']);
+  if (platform === 'darwin') {
+    // macOS
+    obsHeadless = spawn('/Applications/OBS.app/Contents/MacOS/obs', [
+      '--startvirtualcam',
+      '--minimize-to-tray',
+      '--no-browser'
+    ]);
+  } else if (platform === 'win32') {
+    // Windows - assuming default install path
+    obsHeadless = spawn('C:\\Program Files\\obs-studio\\bin\\64bit\\obs64.exe', [
+      '--startvirtualcam',
+      '--minimize-to-tray',
+      '--no-browser'
+    ]);
+  } else if (platform === 'linux') {
+    // Linux - assuming `obs` is in PATH
+    obsHeadless = spawn('obs', [
+      '--startvirtualcam',
+      '--minimize-to-tray',
+      '--no-browser'
+    ]);
+  } else {
+    alert('❌ Unsupported OS');
+  }
   obsHeadless.stdout.setEncoding('utf8');
 
   // Log any output from OBS for debugging
@@ -96,28 +118,6 @@ const addCanvasAsSource = async (socket) => {
   }
 }
 
-const initFFmpeg = () => {
-  ffmpeg = spawn('ffmpeg', [
-    '-f', 'avfoundation',           // Input format
-    '-framerate', '60',             // Set the framerate
-    '-pix_fmt', 'yuv420p',          // Set compatible pixel format
-    '-i', '0',                      // Input source
-    'pipe:1'
-  ]);
-
-  ffmpeg.stderr.on('data', (data) => {
-    console.error(`FFmpeg stderr: ${data}`);
-  });
-
-  ffmpeg.on('close', (code) => {
-    console.log(`FFmpeg exited with code ${code}`);
-  });
-
-  ffmpeg.on('error', (err) => {
-    console.error('FFmpeg process error:', err);
-  });
-}
-
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 1280,
@@ -141,8 +141,6 @@ const createWindow = () => {
 app.whenReady().then(() => {
   // pythonWebsocketServer.startPythonServer();
   createWindow();
-  // console.log('🚀 initiating ffmpeg 🎬');
-  // initFFmpeg();
 })
 
 let canvasWindow;
@@ -197,20 +195,6 @@ ipcMain.on('frame-data', async (event, frame) => {
       console.error('Unable to update input settings', e);
     }
   }
-
-  if (ffmpeg) {
-    // Send the frame data to ffmpeg's stdin
-    try {
-      const base64Data = frame.split(',')[1]; // Remove the "data:image/jpeg;base64," part
-      const jpegBuffer = Buffer.from(base64Data, 'base64');
-
-      if (ffmpeg && ffmpeg.stdin.writable) {
-        ffmpeg.stdin.write(jpegBuffer);
-      }
-    } catch (err) {
-      console.error('Failed to write frame to ffmpeg:', err);
-    }
-  }
 });
 
 // close canvas windows
@@ -233,7 +217,6 @@ ipcMain.handle('toggle-obs-virtual-cam', (event, enableOBSVirtualCam) => {
       console.log('Closing OBS...');
       obsHeadless.kill('SIGINT'); // Gracefully close OBS using SIGINT (same as pressing Ctrl+C)
     }
-    if(ffmpeg) ffmpeg.stdin.end();
   }
 });
 
@@ -248,6 +231,4 @@ app.on('quit', () => {
     console.log('Closing OBS...');
     obsHeadless.kill('SIGTERM'); // Gracefully close OBS using SIGINT (same as pressing Ctrl+C)
   }
-
-  if(ffmpeg) ffmpeg.stdin.end();
 });
