@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onFrame: (callback) => ipcRenderer.on('frame-data', (event, data) => callback(data)),
   openFullscreenDisplay: (displayInfo) => ipcRenderer.send('open-fullscreen-window', displayInfo),
   getDisplays: () => ipcRenderer.invoke('get-displays'),
-  closeWindow: () => ipcRenderer.send('close-window')
+  closeWindow: () => ipcRenderer.send('close-window'),
+  toggleOBSVirtualWebcam: (bool) => ipcRenderer.invoke('toggle-obs-virtual-cam', bool)
 });
