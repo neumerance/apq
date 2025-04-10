@@ -1,19 +1,27 @@
 import { app, BrowserWindow, screen, ipcMain } from 'electron'
 import path from 'path'
-import fs from 'fs';
 import os from 'os';
 import pythonWebsocketServer from './pythonWebsocketServer.js';
 import { exec, spawn } from 'child_process';
 import OBSWebSocket from "obs-websocket-js";
-const sharp = require('sharp');
 
+const platform = os.platform();
 // Define a fixed temporary file path for the vide frames
 const tempFilePath = path.join(os.tmpdir(), "obs_temp_image.jpg");
 let obsHeadless;
 let obsWebsocket;
 let obsWebsocketInitialized = false;
 
-const launchObsHeadless = () => {
+const launchObsHeadless = async () => {
+  if (obsHeadless) {
+    if (obsWebsocket) {
+      await obsWebsocket.call('ToggleVirtualCam', {
+        outputActive: true
+      });
+    }
+
+    return;
+  }
   // Launch OBS in headless mode
   if (platform === 'darwin') {
     // macOS
@@ -79,7 +87,6 @@ const addCanvasAsSource = async (socket) => {
   try {
     // First, check if the scene exists
     const scenes = await socket.call('GetSceneList');
-    console.log('scenes', scenes);
     const sceneExists = scenes.scenes.some(scene => scene.sceneName === 'apq-scene');
 
     await socket.call('SetStudioModeEnabled', {
@@ -95,7 +102,7 @@ const addCanvasAsSource = async (socket) => {
         sceneName: 'apq-scene',  // Name of your scene
       });
 
-      const response = await socket.call('CreateInput', {
+      await socket.call('CreateInput', {
         sceneName: 'apq-scene',  // Name of your scene
         inputName: 'APQ Video Frames',  // Name of the source
         inputKind: 'image_source',  // Use image source for static frames
@@ -103,8 +110,6 @@ const addCanvasAsSource = async (socket) => {
           file: tempFilePath  // Path to the image file
         }
       });
-
-      console.log('Input Created:', response);
     }
 
     await socket.call('SetCurrentProgramScene', {
@@ -180,17 +185,13 @@ ipcMain.on('frame-data', async (event, frame) => {
 
   if (obsWebsocket && obsWebsocketInitialized) {
     try {
-      // const base64Data = frame.replace(/^data:image\/\w+;base64,/, "");
-      // const buffer = Buffer.from(base64Data, 'base64');
-      // fs.writeFileSync(tempFilePath, buffer);
-      const response = await obsWebsocket.call('SetInputSettings', {
+      await obsWebsocket.call('SetInputSettings', {
         inputName: 'APQ Video Frames',  // Name of the source
         inputKind: 'image_source',  // Use image source for static frames
         inputSettings: {
           file: frame  // Path to the image file
         }
       });
-      console.log('SetInputSettings', response);
     } catch (e) {
       console.error('Unable to update input settings', e);
     }
@@ -209,14 +210,13 @@ ipcMain.handle('get-displays', () => {
   return displays;
 });
 
-ipcMain.handle('toggle-obs-virtual-cam', (event, enableOBSVirtualCam) => {
+ipcMain.handle('toggle-obs-virtual-cam', async (event, enableOBSVirtualCam) => {
   if (enableOBSVirtualCam) {
-    launchObsHeadless();
+    await launchObsHeadless();
   } else {
-    if (obsHeadless) {
-      console.log('Closing OBS...');
-      obsHeadless.kill('SIGINT'); // Gracefully close OBS using SIGINT (same as pressing Ctrl+C)
-    }
+    await obsWebsocket.call('ToggleVirtualCam', {
+      outputActive: false
+    });
   }
 });
 
