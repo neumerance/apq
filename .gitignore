@@ -92,3 +92,6 @@ typings/
 out/
 
 vite.preload.config.mjs.timestamp-*.mjs
+
+build/
+dist/
