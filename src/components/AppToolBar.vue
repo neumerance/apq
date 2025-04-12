@@ -7,7 +7,10 @@
       <span class="has-text-weight-bold has-text-dark mr-5">APQ</span>
 
       <div class="app-tool-bar__tools">
-        <DropdownMenu label="File" :subMenus="['Open', 'Save', 'Save As']"></DropdownMenu>
+        <DropdownMenu
+          label="File"
+          :subMenus="['Open', 'Save', 'Save As']"
+        ></DropdownMenu>
         <DropdownMenu label="About"></DropdownMenu>
       </div>
     </div>
@@ -15,7 +18,7 @@
       class="app-tool-bar__display cell is-flex is-align-items-center is-justify-content-center"
     >
       <span class="mr-1"><FullScreen></FullScreen></span>
-      <span class="ml-1"><ObsVirtualWebcam></ObsVirtualWebcam></span>
+      <span class="ml-1"><VirtualWebcam></VirtualWebcam></span>
     </div>
     <div
       class="app-tool-bar__settings cell is-flex is-align-items-center is-justify-content-end"
@@ -39,5 +42,6 @@
 import DropdownMenu from "@/components/ToolBars/DropdownMenu.vue";
 import FullScreen from "@/components/ToolBars/FullScreen.vue";
 import ObsVirtualWebcam from "./ToolBars/ObsVirtualWebcam.vue";
+import VirtualWebcam from "./ToolBars/VirtualWebcam.vue";
 import AppIcon from "@/assets/icons/apq_icon_27x27.png";
 </script>
