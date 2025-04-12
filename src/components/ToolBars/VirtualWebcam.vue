@@ -1,26 +1,26 @@
 <template>
   <button
     class="button is-small"
-    :class="{ 'is-danger': virtualCamEnabled }"
+    :class="{ 'is-danger': toggle }"
     @click="toggleVirtualWebcam"
   >
-    OBS Virtual Cam
+    Virtual Camera
   </button>
 </template>
 <style lang="scss" scoped></style>
 <script setup>
 import { ref } from "vue";
-const virtualCamEnabled = ref(false);
+const toggle = ref(false);
 
 const toggleVirtualWebcam = async () => {
-  virtualCamEnabled.value = !virtualCamEnabled.value;
-
   const devices = await navigator.mediaDevices.enumerateDevices();
-  const unityDeviceExists = devices.find(
+  const isVirtualCamInitialized = devices.some(
     (device) => device.label === "Unity Video Capture"
   );
-  if (unityDeviceExists) return;
 
-  window.electronAPI.toggleVirtualWebcam(virtualCamEnabled.value);
+  window.electronAPI.toggleVirtualWebcam(!toggle.value, isVirtualCamInitialized);
+  window.electronAPI.onToggleVirtualWebcam((bool) => {
+    toggle.value = bool;
+  });
 };
 </script>

@@ -12,6 +12,10 @@ class UnityCaptureController {
     "Install.bat"
   );
 
+  constructor(appWindow) {
+    this.appWindow = appWindow;
+  }
+
   async init() {
     if (os.platform() !== "win32") return;
 
@@ -28,6 +32,10 @@ class UnityCaptureController {
     bat.on("close", (code) => {
       console.log(`Batch file exited with code ${code}`);
     });
+  }
+
+  toggleVirtualCamState(toggle) {
+    this.appWindow.win.webContents.send('toggle-virtual-cam-state', toggle);
   }
 }
 

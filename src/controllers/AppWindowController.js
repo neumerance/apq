@@ -6,10 +6,11 @@ class AppWindowController {
   constructor(preloader, distIndex) {
     this.preloader = preloader;
     this.distIndex = distIndex;
+    this.win = null;
   }
 
   init() {
-    const win = new BrowserWindow({
+    this.win = new BrowserWindow({
       width: 1280,
       height: 720,
       webPreferences: {
@@ -20,9 +21,9 @@ class AppWindowController {
     });
 
     if (process.env.NODE_ENV === "development") {
-      win.loadURL(AppWindowController.APP_URL); // Adjust if you use a different port
+      this.win.loadURL(AppWindowController.APP_URL); // Adjust if you use a different port
     } else {
-      win.loadFile(this.distIndex);
+      this.win.loadFile(this.distIndex);
     }
   }
 }

@@ -11,7 +11,7 @@ const distIndex = path.join(__dirname, "dist/index.html");
 // const obsController = new OBSController();
 const appWindowController = new AppWindowController(preloader, distIndex);
 const fullScreenWindowsController = new FullScreenWindowsController(preloader);
-const unityCaptureController = new UnityCaptureController();
+const unityCaptureController = new UnityCaptureController(appWindowController);
 
 app.whenReady().then(() => {
   appWindowController.init();
@@ -42,13 +42,13 @@ ipcMain.handle("get-displays", () => {
 });
 
 ipcMain.handle("toggle-obs-virtual-cam", async (event, enableOBSVirtualCam) => {
-  // if (enableOBSVirtualCam) await unityCaptureController.init();
   // if (enableOBSVirtualCam) await obsController.initOBSHeadless();
   // await obsController.toggleOBSVirtualCam(enableOBSVirtualCam);
 });
 
-ipcMain.handle("toggle-virtual-cam", async (event, enableVirtualCam) => {
-  if (enableVirtualCam) await unityCaptureController.init();
+ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
+  if (!opts.isVirtualCamInitialized) await unityCaptureController.init();
+  unityCaptureController.toggleVirtualCamState(opts.toggle);
 });
 
 app.on("window-all-closed", () => {
