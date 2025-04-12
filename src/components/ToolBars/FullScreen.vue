@@ -26,7 +26,7 @@
           :key="`display-${index}`"
           href="#"
           class="dropdown-item has-text-light"
-          @click="openDisplayWindow(display.label)"
+          @click="openDisplayWindow(display.id)"
         >
           {{ display.label }}
         </a>
@@ -50,8 +50,8 @@ const onHovered = (bool) => {
   isHovered.value = bool;
 };
 
-const openDisplayWindow = (displayLabel) => {
-  window.electronAPI.openFullscreenDisplay(displayLabel);
+const openDisplayWindow = (displayId) => {
+  window.electronAPI.openFullscreenDisplay(displayId);
   isFullScreen.value = true;
 };
 
@@ -62,9 +62,10 @@ const closeFullScreen = () => {
 
 onMounted(async () => {
   const availableDisplays = await window.electronAPI.getDisplays();
+
   displays.value = availableDisplays.map((display) => {
     return {
-      label: display.label,
+      label: `${display.id} ${display.label}`,
       id: display.id,
     };
   });

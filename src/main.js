@@ -5,8 +5,11 @@ import AppWindowController from "./controllers/AppWindowController.js";
 import FullScreenWindowsController from "./controllers/FullScreenWindowController.js";
 import UnityCaptureController from "./controllers/UnityCaptureController.js";
 
+import WebsocketHandler from "./websocket/handler/index.js";
+
 const preloader = path.join(__dirname, "preload.js");
 const distIndex = path.join(__dirname, "dist/index.html");
+let websocketClient;
 
 // const obsController = new OBSController();
 const appWindowController = new AppWindowController(preloader, distIndex);
@@ -17,10 +20,10 @@ app.whenReady().then(() => {
   appWindowController.init();
 });
 
-ipcMain.on("open-fullscreen-window", (_event, displayLabel) => {
+ipcMain.on("open-fullscreen-window", (_event, displayId) => {
   // Open on external monitor if desired
   const displays = screen.getAllDisplays();
-  const externalDisplay = displays.find((d) => d.label === displayLabel);
+  const externalDisplay = displays.find((d) => d.id === displayId);
 
   fullScreenWindowsController.init(externalDisplay);
 });
@@ -48,6 +51,11 @@ ipcMain.handle("toggle-obs-virtual-cam", async (event, enableOBSVirtualCam) => {
 
 ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
   if (!opts.isVirtualCamInitialized) await unityCaptureController.init();
+  if (!websocketClient) {
+    websocketClient = new WebsocketHandler();
+    await websocketClient.connect();
+  }
+
   unityCaptureController.toggleVirtualCamState(opts.toggle);
 });
 
