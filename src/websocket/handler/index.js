@@ -8,12 +8,15 @@ class WebsocketHandler {
     this.client = new WebSocketClient();
     this.client.on("connectFailed", (error) => this.onError(error));
     this.client.on("connect", (connection) => this.onConnect(connection));
-    this.connected = false;
+    this.connection = null;
   }
 
   async connect() {
     let i = 1;
-    while (1 <= WebsocketHandler.CONNECTION_RETRY && this.connected === false) {
+    while (
+      1 <= WebsocketHandler.CONNECTION_RETRY &&
+      !(this.connection && this.connection.connected)
+    ) {
       if (i >= WebsocketHandler.CONNECTION_RETRY)
         throw new Error("Websocket connection failed!");
 
@@ -32,7 +35,6 @@ class WebsocketHandler {
 
   onError(error) {
     console.log("Connect Error: " + error.toString());
-    this.connected = false;
   }
 
   onMessage(message) {
@@ -41,13 +43,13 @@ class WebsocketHandler {
   }
 
   onConnect(connection) {
-    this.connected = true;
+    this.connection = connection;
     console.log("WebSocket Client Connected");
     connection.on("error", (error) => this.onError(error));
     connection.on("close", () =>
       console.log("echo-protocol Connection Closed")
     );
-    connection.on("message", (message) => onMessage(message));
+    connection.on("message", (message) => this.onMessage(message));
   }
 }
 

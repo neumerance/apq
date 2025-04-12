@@ -31,7 +31,9 @@ ipcMain.on("open-fullscreen-window", (_event, displayId) => {
 // Listen for frame data from Window A and send to Window B
 ipcMain.on("frame-data", async (event, frame) => {
   fullScreenWindowsController.receiveFrames(frame);
-  // obsController.receiveFrames(frame);
+
+  if (websocketClient?.connection?.connected)
+    websocketClient.connection.sendUTF(frame);
 });
 
 // close canvas windows
@@ -51,7 +53,7 @@ ipcMain.handle("toggle-obs-virtual-cam", async (event, enableOBSVirtualCam) => {
 
 ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
   if (!opts.isVirtualCamInitialized) await unityCaptureController.init();
-  if (!websocketClient) {
+  if (!websocketClient?.connection?.connected) {
     websocketClient = new WebsocketHandler();
     await websocketClient.connect();
   }
@@ -65,5 +67,6 @@ app.on("window-all-closed", () => {
 
 // Gracefully quit OBS when Electron app is closed
 app.on("quit", () => {
-  // obsController.quit();
+  if (websocketClient?.connection?.connected)
+    websocketClient.connection.disconnect();
 });
