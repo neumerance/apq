@@ -4,6 +4,7 @@ import websockets
 class WebsocketServer:
 	def __init__(self):
 		self.server = None
+		self.on_message = None
 
 	async def run(self):
 		self.server = await websockets.serve(self.echo, "localhost", 8765, subprotocols=["json"])
@@ -19,8 +20,8 @@ class WebsocketServer:
 
 	async def echo(self, websocket, path):
 		async for message in websocket:
-			print(f"Received: {message}")
-			await websocket.send(f"Echo: {message}")
+			if callable(self.onMessage):
+				self.onMessage(message)
 
 	async def stop(self):
 		if self.server:
