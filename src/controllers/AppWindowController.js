@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, session } from "electron";
 
 class AppWindowController {
   static APP_URL = "http://localhost:5173";
@@ -17,6 +17,7 @@ class AppWindowController {
         nodeIntegration: false,
         contextIsolation: true,
         preload: this.preloader,
+        media: true,
       },
     });
 
@@ -25,6 +26,17 @@ class AppWindowController {
     } else {
       this.win.loadFile(this.distIndex);
     }
+
+    session.defaultSession.setPermissionRequestHandler(
+      (webContents, permission, callback) => {
+        if (permission === "media") {
+          // Allow camera + mic
+          callback(true);
+        } else {
+          callback(false);
+        }
+      }
+    );
   }
 }
 

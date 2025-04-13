@@ -5,11 +5,11 @@
   <section class="player-section">
     <div class="grid">
       <div class="cell">
-        <SectionTitle title="Preview" />
+        <AudioOutputSelector audioDeviceFor="previewAudioDevice" />
         <video-player :options="previewVideoOptions" />
       </div>
       <div class="cell">
-        <SectionTitle title="Program" />
+        <AudioOutputSelector audioDeviceFor="queueAudioDevice" />
         <video-player :options="queueVideoOptions" />
       </div>
     </div>
@@ -80,7 +80,11 @@ import Library from "@/components/Library.vue";
 import SectionTitle from "@/components/SectionTitle.vue";
 import ImportBay from "@/components/ImportBay.vue";
 import AppToolBar from "@/components/AppToolBar.vue";
+import AudioOutputSelector from "@/components/AudioOutputSelector.vue";
+import { onMounted } from "vue";
+import { useAudioDeviceStore } from "@/stores/audioDeviceStore";
 
+const audioDeviceStore = useAudioDeviceStore();
 const now = new Date();
 const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
 const enqueuedScenes = [
@@ -95,10 +99,10 @@ const previewVideoOptions = {
   autoplay: false,
   controls: true,
   width: 320,
-  muted: true,
+  muted: false,
   sources: [
     {
-      src: "/src/assets/video/no-signal.mp4",
+      src: "/src/assets/video/placeholder.mp4",
       type: "video/mp4",
     },
   ],
@@ -112,9 +116,14 @@ const queueVideoOptions = {
   muted: false,
   sources: [
     {
-      src: "/src/assets/video/placeholder.mp4",
+      src: "/src/assets/video/video-audio-test.mp4",
       type: "video/mp4",
     },
   ],
 };
+
+onMounted(async () => {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  audioDeviceStore.storeDevices(devices);
+});
 </script>

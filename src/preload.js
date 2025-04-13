@@ -10,7 +10,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.send("open-fullscreen-window", displayInfo),
   getDisplays: () => ipcRenderer.invoke("get-displays"),
   closeWindow: () => ipcRenderer.send("close-window"),
-  toggleOBSVirtualWebcam: (bool) => ipcRenderer.invoke("toggle-obs-virtual-cam", bool),
-  toggleVirtualWebcam: (toggle, isVirtualCamInitialized) => ipcRenderer.invoke("toggle-virtual-cam", { toggle, isVirtualCamInitialized }),
-  onToggleVirtualWebcam: (callback) => ipcRenderer.on("toggle-virtual-cam-state", (event, toggle) => callback(toggle)),
+  toggleOBSVirtualWebcam: (bool) =>
+    ipcRenderer.invoke("toggle-obs-virtual-cam", bool),
+  toggleVirtualWebcam: (toggle, isVirtualCamInitialized) =>
+    ipcRenderer.invoke("toggle-virtual-cam", {
+      toggle,
+      isVirtualCamInitialized,
+    }),
+  onToggleVirtualWebcam: (callback) =>
+    ipcRenderer.on("toggle-virtual-cam-state", (event, toggle) =>
+      callback(toggle)
+    ),
+  getUserMedia: (constraints) =>
+    navigator.mediaDevices.getUserMedia(constraints),
 });
