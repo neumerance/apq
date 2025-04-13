@@ -96,3 +96,4 @@ vite.preload.config.mjs.timestamp-*.mjs
 build/
 dist/
 __pycache__/
+.venv

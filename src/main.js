@@ -20,14 +20,7 @@ let pythonExecPath = path.join(
 );
 
 if (app.isPackaged) {
-  pythonExecPath = path.join(
-    app.getAppPath(),
-    "src",
-    "websocket",
-    "server",
-    "dist",
-    "main.exe"
-  );
+  pythonExecPath = path.join(app.getAppPath(), "dist", "main.exe");
   pythonExec = spawn(pythonExecPath, []);
 } else {
   pythonExec = spawn("python", [pythonExecPath], { shell: true });
