@@ -37,6 +37,7 @@ pythonExec.on("close", (code) => {
 });
 
 let websocketClient;
+let virtualCamEnabled;
 
 // const obsController = new OBSController();
 const appWindowController = new AppWindowController(preloader, distIndex);
@@ -59,7 +60,7 @@ ipcMain.on("open-fullscreen-window", (_event, displayId) => {
 ipcMain.on("frame-data", async (event, frame) => {
   fullScreenWindowsController.receiveFrames(frame);
 
-  if (websocketClient?.connection?.connected)
+  if (websocketClient?.connection?.connected && virtualCamEnabled)
     websocketClient.connection.sendUTF(frame);
 });
 
@@ -79,16 +80,19 @@ ipcMain.handle("toggle-obs-virtual-cam", async (event, enableOBSVirtualCam) => {
 });
 
 ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
-  if (!opts.isVirtualCamInitialized) {
-    await unityCaptureController.init();
-    app.quit();
-  } else {
-    if (!websocketClient?.connection?.connected) {
-      websocketClient = new WebsocketHandler();
-      await websocketClient.connect();
+  if (opts.isVirtualCamInitialized) {
+    if (opts.toggle) {
+      if (!websocketClient?.connection?.connected) {
+        websocketClient = new WebsocketHandler();
+        await websocketClient.connect();
+      }
     }
 
+    virtualCamEnabled = opts.toggle;
     unityCaptureController.toggleVirtualCamState(opts.toggle);
+  } else {
+    await unityCaptureController.init();
+    app.quit();
   }
 });
 
