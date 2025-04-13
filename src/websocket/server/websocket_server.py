@@ -20,8 +20,8 @@ class WebsocketServer:
 
 	async def echo(self, websocket, path):
 		async for message in websocket:
-			if callable(self.onMessage):
-				self.onMessage(message)
+			if callable(self.on_message):
+				self.on_message(message)
 
 	async def stop(self):
 		if self.server:

@@ -35,7 +35,7 @@ class UnityCaptureController {
   }
 
   toggleVirtualCamState(toggle) {
-    this.appWindow.win.webContents.send('toggle-virtual-cam-state', toggle);
+    this.appWindow.win.webContents.send("toggle-virtual-cam-state", toggle);
   }
 }
 

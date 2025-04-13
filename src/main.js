@@ -1,14 +1,48 @@
+import { spawn } from "child_process";
 import { app, screen, ipcMain } from "electron";
 import path from "path";
+import treeKill from "tree-kill";
 // import OBSController from "./controllers/OBSController.js";
 import AppWindowController from "./controllers/AppWindowController.js";
 import FullScreenWindowsController from "./controllers/FullScreenWindowController.js";
 import UnityCaptureController from "./controllers/UnityCaptureController.js";
-
 import WebsocketHandler from "./websocket/handler/index.js";
 
 const preloader = path.join(__dirname, "preload.js");
 const distIndex = path.join(__dirname, "dist/index.html");
+let pythonExec;
+let pythonExecPath = path.join(
+  app.getAppPath(),
+  "src",
+  "websocket",
+  "server",
+  "main.py"
+);
+
+if (app.isPackaged) {
+  pythonExecPath = path.join(
+    app.getAppPath(),
+    "src",
+    "websocket",
+    "server",
+    "dist",
+    "main.exe"
+  );
+  pythonExec = spawn(pythonExecPath, []);
+} else {
+  pythonExec = spawn("python", [pythonExecPath], { shell: true });
+}
+
+pythonExec.stdout.on("data", (data) => {
+  console.log(`stdout: ${data}`);
+});
+pythonExec.stderr.on("data", (data) => {
+  console.error(`stderr: ${data}`);
+});
+pythonExec.on("close", (code) => {
+  console.log(`child process exited with code ${code}`);
+});
+
 let websocketClient;
 
 // const obsController = new OBSController();
@@ -61,12 +95,47 @@ ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
   unityCaptureController.toggleVirtualCamState(opts.toggle);
 });
 
+// Define your cleanup function.
+const cleanupAndExit = () => {
+  // Disconnect websocket connection if exists and connected.
+  if (websocketClient?.connection?.connected) {
+    websocketClient.connection.disconnect();
+  }
+  // Kill the Python subprocess if running.
+  if (pythonExec && !pythonExec.killed) {
+    // Send SIGTERM to allow graceful shutdown.
+    treeKill(pythonExec.pid, "SIGTERM", (err) => {
+      if (err) {
+        console.error("Error killing process tree, force killing...", err);
+        treeKill(pythonExec.pid, "SIGKILL");
+      } else {
+        console.log("Python process killed successfully.");
+      }
+    });
+  }
+  console.log("Cleanup completed.");
+};
+
+// Quit the app when all windows are closed (unless on macOS)
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-// Gracefully quit OBS when Electron app is closed
+// Call cleanup when Electron is quitting.
 app.on("quit", () => {
-  if (websocketClient?.connection?.connected)
-    websocketClient.connection.disconnect();
+  cleanupAndExit();
+});
+
+// Also listen for process signals (e.g. Ctrl+C)
+process.on("SIGINT", () => {
+  console.log("Received SIGINT, initiating cleanup...");
+  cleanupAndExit();
+  app.quit();
+  setTimeout(() => process.exit(0), 100);
+});
+process.on("SIGTERM", () => {
+  console.log("Received SIGTERM, initiating cleanup...");
+  cleanupAndExit();
+  app.quit();
+  setTimeout(() => process.exit(0), 100);
 });
