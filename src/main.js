@@ -79,21 +79,21 @@ ipcMain.handle("toggle-obs-virtual-cam", async (event, enableOBSVirtualCam) => {
 });
 
 ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
-  if (!opts.isVirtualCamInitialized) await unityCaptureController.init();
-  if (!websocketClient?.connection?.connected) {
-    websocketClient = new WebsocketHandler();
-    await websocketClient.connect();
-  }
+  if (!opts.isVirtualCamInitialized) {
+    await unityCaptureController.init();
+    app.quit();
+  } else {
+    if (!websocketClient?.connection?.connected) {
+      websocketClient = new WebsocketHandler();
+      await websocketClient.connect();
+    }
 
-  unityCaptureController.toggleVirtualCamState(opts.toggle);
+    unityCaptureController.toggleVirtualCamState(opts.toggle);
+  }
 });
 
 // Define your cleanup function.
 const cleanupAndExit = () => {
-  // Disconnect websocket connection if exists and connected.
-  if (websocketClient?.connection?.connected) {
-    websocketClient.connection.disconnect();
-  }
   // Kill the Python subprocess if running.
   if (pythonExec && !pythonExec.killed) {
     // Send SIGTERM to allow graceful shutdown.

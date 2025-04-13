@@ -16,13 +16,15 @@ class UnityCaptureController {
     this.appWindow = appWindow;
   }
 
-  async init() {
+  async init(callback = async () => {}) {
     if (os.platform() !== "win32") return;
 
     const bat = spawn("cmd.exe", ["/c", UnityCaptureController.BATFILE_PATH]);
 
-    bat.stdout.on("data", (data) => {
+    bat.stdout.on("data", async (data) => {
       console.log(`stdout: ${data}`);
+
+      await callback();
     });
 
     bat.stderr.on("data", (data) => {

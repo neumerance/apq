@@ -27,5 +27,5 @@ class ReceivedFramesController:
 
   def receive_frame(self, b64_string):
     frame = self.base64_to_cv_frame(b64_string)
-    with pyvirtualcam.Camera(width=1920, height=1080, fps=60, fmt=PixelFormat.BGR, device="Unity Video Capture") as cam:
+    with pyvirtualcam.Camera(width=1920, height=1080, fps=60, fmt=PixelFormat.BGR, device="APQ Virtual Camera") as cam:
       cam.send(frame)

@@ -15,10 +15,13 @@ const toggle = ref(false);
 const toggleVirtualWebcam = async () => {
   const devices = await navigator.mediaDevices.enumerateDevices();
   const isVirtualCamInitialized = devices.some(
-    (device) => device.label === "Unity Video Capture"
+    (device) => device.label === "APQ Virtual Camera"
   );
 
-  window.electronAPI.toggleVirtualWebcam(!toggle.value, isVirtualCamInitialized);
+  window.electronAPI.toggleVirtualWebcam(
+    !toggle.value,
+    isVirtualCamInitialized
+  );
   window.electronAPI.onToggleVirtualWebcam((bool) => {
     toggle.value = bool;
   });
