@@ -6,11 +6,17 @@
     <div class="grid">
       <div class="cell">
         <AudioOutputSelector audioDeviceFor="previewAudioDevice" />
-        <video-player :options="previewVideoOptions" />
+        <video-player
+          :options="previewVideoOptions"
+          :audioDeviceId="previewAudioDevice"
+        />
       </div>
       <div class="cell">
         <AudioOutputSelector audioDeviceFor="queueAudioDevice" />
-        <video-player :options="queueVideoOptions" />
+        <video-player
+          :options="queueVideoOptions"
+          :audioDeviceId="queueAudioDevice"
+        />
       </div>
     </div>
   </section>
@@ -81,10 +87,13 @@ import SectionTitle from "@/components/SectionTitle.vue";
 import ImportBay from "@/components/ImportBay.vue";
 import AppToolBar from "@/components/AppToolBar.vue";
 import AudioOutputSelector from "@/components/AudioOutputSelector.vue";
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
 import { useAudioDeviceStore } from "@/stores/audioDeviceStore";
+import { storeToRefs } from "pinia";
 
 const audioDeviceStore = useAudioDeviceStore();
+const { previewAudioDevice, queueAudioDevice } = storeToRefs(audioDeviceStore);
+
 const now = new Date();
 const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
 const enqueuedScenes = [

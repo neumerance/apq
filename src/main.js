@@ -2,6 +2,7 @@ import { spawn } from "child_process";
 import { app, screen, ipcMain } from "electron";
 import path from "path";
 import treeKill from "tree-kill";
+import { installExtension, VUEJS_DEVTOOLS } from "electron-devtools-installer";
 // import OBSController from "./controllers/OBSController.js";
 import AppWindowController from "./controllers/AppWindowController.js";
 import FullScreenWindowsController from "./controllers/FullScreenWindowController.js";
@@ -46,7 +47,13 @@ const virtualCameraController = new VirtualCameraController(
   appWindowController
 );
 
+app.commandLine.appendSwitch("enable-features", "AudioOutputDevices");
 app.whenReady().then(() => {
+  if (!app.isPackaged) {
+    installExtension(VUEJS_DEVTOOLS)
+      .then((ext) => console.log(`Extension ${ext.name} installed`))
+      .catch((error) => console.log(`Unable to install extension:`, error));
+  }
   appWindowController.init();
 });
 

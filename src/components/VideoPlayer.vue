@@ -21,56 +21,84 @@
 }
 </style>
 
-<script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { storeToRefs } from "pinia";
 import videojs from "video.js";
 
-export default {
-  name: "VideoPlayer",
-  props: {
-    options: {
-      type: Object,
-      default() {
-        return {};
-      },
-    },
+// Define props
+const props = defineProps({
+  options: {
+    type: Object,
+    default: () => ({}),
   },
-  data() {
-    return {
-      player: null,
-    };
-  },
-  mounted() {
-    this.player = videojs(this.$refs.videoPlayer, this.options, () => {
-      this.player.log("onPlayerReady", this);
-    });
+  audioDeviceId: String,
+});
 
-    this.player.on("play", () => {
-      console.log("player is playing");
+// Refs to access the DOM elements
+const videoPlayer = ref(null);
+const videoCanvasRef = ref(null);
+let player = null;
 
-      const canvas = this.$refs.videoCanvasRef;
-      const video = this.$refs.videoPlayer;
-      const ctx = canvas.getContext("2d");
+const routeAudioToAudioDevice = async (deviceId) => {
+  if (typeof videoPlayer.value.setSinkId !== "function") {
+    console.warn("setSinkId is not supported in your Electron version");
+    return;
+  }
 
-      canvas.width = 1920;
-      canvas.height = 1080;
-
-      const sendFrame = () => {
-        if (video.paused || video.ended) return;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const frame = canvas.toDataURL("image/jpeg");
-
-        // Send to main process
-        window.electronAPI.sendFrame(frame);
-        requestAnimationFrame(sendFrame);
-      };
-
-      sendFrame();
-    });
-  },
-  beforeDestroy() {
-    if (this.player) {
-      this.player.dispose();
-    }
-  },
+  try {
+    await videoPlayer.value.setSinkId(deviceId);
+    console.log(`Audio output device set to ${deviceId}`);
+  } catch (error) {
+    console.error(
+      `Error setting audio output device for deviceId ${deviceId}:`,
+      error
+    );
+  }
 };
+
+watch(
+  () => props.audioDeviceId,
+  (audioDeviceId) => {
+    console.log("audioDeviceId changed:", audioDeviceId);
+    routeAudioToAudioDevice(audioDeviceId);
+  }
+);
+
+// Mounted hook equivalent using onMounted
+onMounted(() => {
+  player = videojs(videoPlayer.value, props.options, () => {
+    player.log("onPlayerReady", this);
+  });
+
+  player.on("play", () => {
+    console.log("player is playing");
+
+    const canvas = videoCanvasRef.value;
+    const video = videoPlayer.value;
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = 1920;
+    canvas.height = 1080;
+
+    const sendFrame = () => {
+      if (video.paused || video.ended) return;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const frame = canvas.toDataURL("image/jpeg");
+
+      // Send to main process
+      window.electronAPI.sendFrame(frame);
+      requestAnimationFrame(sendFrame);
+    };
+
+    sendFrame();
+  });
+});
+
+// BeforeDestroy equivalent using onBeforeUnmount
+onBeforeUnmount(() => {
+  if (player) {
+    player.dispose();
+  }
+});
 </script>

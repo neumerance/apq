@@ -8,15 +8,20 @@ export const useAudioDeviceStore = defineStore("audioDeviceStore", () => {
 
   const storeDevices = (devices) => {
     audioDevices.value = devices.filter(
-      (device) => device.kind === "audioinput" && !device.label.includes("NDI")
+      (device) => device.kind === "audiooutput" && !device.label.includes("NDI")
     );
   };
 
-  const assignedDevice = (device, deviceFor = "queueAudioDevice") => {
+  const assignedDevice = (deviceId, deviceFor = "queueAudioDevice") => {
     if (!deviceFor || !deviceFor.length) return;
+    const device = audioDevices.value.find(
+      (device) => device.deviceId === deviceId
+    );
 
-    if (deviceFor === "queueAudioDevice") queueAudioDevice.value = device;
-    if (deviceFor === "previewAudioDevice") previewAudioDevice.value = device;
+    if (!device) return;
+
+    if (deviceFor === "queueAudioDevice") queueAudioDevice.value = deviceId;
+    if (deviceFor === "previewAudioDevice") previewAudioDevice.value = deviceId;
   };
 
   return {
