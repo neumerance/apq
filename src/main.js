@@ -5,7 +5,7 @@ import treeKill from "tree-kill";
 // import OBSController from "./controllers/OBSController.js";
 import AppWindowController from "./controllers/AppWindowController.js";
 import FullScreenWindowsController from "./controllers/FullScreenWindowController.js";
-import UnityCaptureController from "./controllers/UnityCaptureController.js";
+import VirtualCameraController from "./controllers/VirtualCameraController.js";
 import WebsocketHandler from "./websocket/handler/index.js";
 
 const preloader = path.join(__dirname, "preload.js");
@@ -42,7 +42,9 @@ let virtualCamEnabled;
 // const obsController = new OBSController();
 const appWindowController = new AppWindowController(preloader, distIndex);
 const fullScreenWindowsController = new FullScreenWindowsController(preloader);
-const unityCaptureController = new UnityCaptureController(appWindowController);
+const virtualCameraController = new VirtualCameraController(
+  appWindowController
+);
 
 app.whenReady().then(() => {
   appWindowController.init();
@@ -89,9 +91,9 @@ ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
     }
 
     virtualCamEnabled = opts.toggle;
-    unityCaptureController.toggleVirtualCamState(opts.toggle);
+    virtualCameraController.toggleVirtualCamState(opts.toggle);
   } else {
-    await unityCaptureController.init();
+    await virtualCameraController.init();
     app.quit();
   }
 });

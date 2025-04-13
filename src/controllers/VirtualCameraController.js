@@ -3,7 +3,7 @@ import { spawn } from "child_process";
 import os from "os";
 import path from "path";
 
-class UnityCaptureController {
+class VirtualCameraController {
   static BATFILE_PATH = path.join(
     app.getAppPath(),
     "src",
@@ -19,7 +19,7 @@ class UnityCaptureController {
   async init(callback = async () => {}) {
     if (os.platform() !== "win32") return;
 
-    const bat = spawn("cmd.exe", ["/c", UnityCaptureController.BATFILE_PATH]);
+    const bat = spawn("cmd.exe", ["/c", VirtualCameraController.BATFILE_PATH]);
 
     bat.stdout.on("data", async (data) => {
       console.log(`stdout: ${data}`);
@@ -41,4 +41,4 @@ class UnityCaptureController {
   }
 }
 
-export default UnityCaptureController;
+export default VirtualCameraController;
