@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "settings": {
+      "type": "object",
+      "properties": {
+        "audio": {
+          "type": "object",
+          "properties": {
+            "device": {
+              "type": "object",
+              "properties": {
+                "queuePlayer": { "type": "string" },
+                "previewPlayer": { "type": "string" }
+              },
+              "required": ["queuePlayer", "previewPlayer"]
+            }
+          },
+          "required": ["device"]
+        },
+        "video": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
+        },
+        "ndi": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" }
+          },
+          "required": ["enabled"]
+        },
+        "virtualcam": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "enabled": { "type": "boolean" }
+          },
+          "required": ["name", "enabled"]
+        }
+      },
+      "required": ["audio", "video", "ndi", "virtualcam"]
+    },
+    "library": {
+      "type": "object",
+      "properties": {
+        "scenes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scene"
+          }
+        }
+      },
+      "required": ["scenes"]
+    },
+    "queue": {
+      "type": "object",
+      "properties": {
+        "scenes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scene"
+          }
+        }
+      },
+      "required": ["scenes"]
+    }
+  },
+  "required": ["settings", "library", "queue"],
+  "$defs": {
+    "playlistItem": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "src": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "startAt": { "type": "string" },
+        "endAt": { "type": "string" },
+        "playSpeed": { "type": "number" }
+      },
+      "required": ["title", "src", "enabled", "startAt", "endAt", "playSpeed"]
+    },
+    "scene": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "startDateTime": { "type": "string" },
+        "endDateTime": { "type": "string" },
+        "playlist": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/playlistItem" }
+        }
+      },
+      "required": ["title", "startDateTime", "endDateTime", "playlist"]
+    }
+  }
+}
