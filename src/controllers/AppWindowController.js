@@ -1,11 +1,11 @@
-import { BrowserWindow, session } from "electron";
+import { BrowserWindow, session, app } from "electron";
+import path from "path";
 
 class AppWindowController {
   static APP_URL = "http://localhost:5173";
 
   constructor(preloader, distIndex) {
     this.preloader = preloader;
-    this.distIndex = distIndex;
     this.win = null;
   }
 
@@ -21,10 +21,19 @@ class AppWindowController {
       },
     });
 
-    if (process.env.NODE_ENV === "development") {
-      this.win.loadURL(AppWindowController.APP_URL); // Adjust if you use a different port
+    if (app.isPackaged) {
+      const indexPath = path.join(
+        process.resourcesPath, // Use resourcesPath for packaged apps
+        "app.asar",
+        ".vite",
+        "renderer",
+        "main_window",
+        "index.html"
+      );
+      this.win.loadFile(indexPath);
     } else {
-      this.win.loadFile(this.distIndex);
+      this.win.loadURL(AppWindowController.APP_URL);
+      this.win.webContents.openDevTools();
     }
 
     session.defaultSession.setPermissionRequestHandler(

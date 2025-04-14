@@ -1,7 +1,10 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, app } from "electron";
+import path from "path";
 
 class FullScreenWindowsController {
-  static TEMPLATE = 'src/fullscreen.html';
+  static TEMPLATE = app.isPackaged
+    ? path.join(process.resourcesPath, "fullscreen.html")
+    : path.join(app.getAppPath(), "src", "fullscreen.html");
 
   constructor(preloader) {
     this.preloader = preloader;
@@ -20,14 +23,14 @@ class FullScreenWindowsController {
     const { x, y, width, height } = display.bounds;
 
     this.fullscreenWindow = new BrowserWindow({
-        x,
-        y,
-        width,
-        height,
-        webPreferences: {
-          preload: this.preloader,
-        }
-      });
+      x,
+      y,
+      width,
+      height,
+      webPreferences: {
+        preload: this.preloader,
+      },
+    });
     this.fullscreenWindow.loadFile(this.template);
     this.fullscreenWindow.focus();
     this.fullscreenWindow.setFullScreen(true);
@@ -36,7 +39,7 @@ class FullScreenWindowsController {
   receiveFrames(frame) {
     if (!this.windowPresent()) return;
 
-    this.fullscreenWindow.webContents.send('frame-data', frame);
+    this.fullscreenWindow.webContents.send("frame-data", frame);
   }
 
   closeWindow() {
@@ -46,7 +49,7 @@ class FullScreenWindowsController {
   }
 
   windowPresent() {
-    return this.fullscreenWindow && !this.fullscreenWindow.isDestroyed()
+    return this.fullscreenWindow && !this.fullscreenWindow.isDestroyed();
   }
 }
 

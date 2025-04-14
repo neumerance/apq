@@ -34,7 +34,7 @@
 </style>
 
 <script setup>
-import { ref, defineProps, onMounted, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useAudioDeviceStore } from "@/stores/audioDeviceStore";
 

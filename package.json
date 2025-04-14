@@ -9,18 +9,36 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "build": "vite build && electron-forge package",
+    "build": "electron-forge package",
     "lint": "echo \"No linting configured\""
   },
+  "files": [
+    "dist/main.exe",
+    "dist/**",
+    "src/**",
+    "index.js",
+    "main.js",
+    "preload.js"
+  ],
   "build": {
+    "files": [
+      "dist/**/*",
+      "src/**/*",
+      "index.js",
+      "main.js",
+      "preload.js"
+    ],
     "extraResources": [
       {
-        "from": "src/executables/main.py",
-        "to": "src/executables/main.py"
+        "from": "src/unitycapture/",
+        "to": "unitycapture",
+        "filter": [
+          "**/*"
+        ]
       },
       {
-        "from": "src/executables/video-websocket.py",
-        "to": "src/executables/video-websocket.py"
+        "from": "dist/main.exe",
+        "to": "main.exe"
       }
     ]
   },
@@ -64,5 +82,9 @@
     "bulma": "^1.0.3",
     "electron-squirrel-startup": "^1.0.1",
     "videojs": "^1.0.0"
-  }
+  },
+  "plugins": [
+    "@electron-forge/plugin-vite",
+    "@electron-forge/maker-squirrel"
+  ]
 }

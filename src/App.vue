@@ -1,21 +1,25 @@
 <template>
   <section class="toolbar-section has-background-light">
-    <AppToolBar></AppToolBar>
+    <app-tool-bar></app-tool-bar>
   </section>
   <section class="player-section">
     <div class="grid">
       <div class="cell">
-        <AudioOutputSelector audioDeviceFor="previewAudioDevice" />
+        <audio-output-selector
+          audioDeviceFor="previewAudioDevice"
+        ></audio-output-selector>
         <video-player
           :options="previewVideoOptions"
-          :audioDeviceId="previewAudioDevice"
+          :audio-device-id="previewAudioDevice"
         />
       </div>
       <div class="cell">
-        <AudioOutputSelector audioDeviceFor="queueAudioDevice" />
+        <audio-output-selector
+          audio-device-for="queueAudioDevice"
+        ></audio-output-selector>
         <video-player
           :options="queueVideoOptions"
-          :audioDeviceId="queueAudioDevice"
+          :audio-device-id="queueAudioDevice"
         />
       </div>
     </div>
@@ -23,13 +27,13 @@
   <section class="play-queue">
     <div class="grid">
       <div class="cell library-section play-queue__timeline pt-5">
-        <SectionTitle title="Library" />
-        <Library></Library>
-        <ImportBay></ImportBay>
+        <section-title title="Library"></section-title>
+        <library></library>
+        <import-bay></import-bay>
       </div>
       <div class="cell play-queue__timeline pt-5">
-        <SectionTitle title="Queue" />
-        <QueueTimeline :enqueuedScenes="enqueuedScenes"></QueueTimeline>
+        <section-title title="Queue"></section-title>
+        <queue-timeline :enqueued-scenes="enqueuedScenes"></queue-timeline>
       </div>
     </div>
   </section>

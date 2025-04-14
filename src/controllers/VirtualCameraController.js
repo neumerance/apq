@@ -4,13 +4,15 @@ import os from "os";
 import path from "path";
 
 class VirtualCameraController {
-  static BATFILE_PATH = path.join(
-    app.getAppPath(),
-    "src",
-    "unitycapture",
-    "Install",
-    "Install.bat"
-  );
+  static BATFILE_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, "unitycapture", "Install", "Install.bat")
+    : path.join(
+        app.getAppPath(),
+        "src",
+        "unitycapture",
+        "Install",
+        "Install.bat"
+      );
 
   constructor(appWindow) {
     this.appWindow = appWindow;

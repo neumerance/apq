@@ -10,20 +10,20 @@ import VirtualCameraController from "./controllers/VirtualCameraController.js";
 import WebsocketHandler from "./websocket/handler/index.js";
 
 const preloader = path.join(__dirname, "preload.js");
-const distIndex = path.join(__dirname, "dist/index.html");
 let pythonExec;
-let pythonExecPath = path.join(
-  app.getAppPath(),
-  "src",
-  "websocket",
-  "server",
-  "main.py"
-);
+let pythonExecPath;
 
 if (app.isPackaged) {
-  pythonExecPath = path.join(app.getAppPath(), "dist", "main.exe");
+  pythonExecPath = path.join(process.resourcesPath, "main.exe");
   pythonExec = spawn(pythonExecPath, []);
 } else {
+  pythonExecPath = path.join(
+    app.getAppPath(),
+    "src",
+    "websocket",
+    "server",
+    "main.py"
+  );
   pythonExec = spawn("python", [pythonExecPath], { shell: true });
 }
 
@@ -41,7 +41,7 @@ let websocketClient;
 let virtualCamEnabled;
 
 // const obsController = new OBSController();
-const appWindowController = new AppWindowController(preloader, distIndex);
+const appWindowController = new AppWindowController(preloader);
 const fullScreenWindowsController = new FullScreenWindowsController(preloader);
 const virtualCameraController = new VirtualCameraController(
   appWindowController
