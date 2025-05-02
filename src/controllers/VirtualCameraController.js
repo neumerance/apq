@@ -39,7 +39,7 @@ class VirtualCameraController {
   }
 
   toggleVirtualCamState(toggle) {
-    this.appWindow.win.webContents.send("toggle-virtual-cam-state", toggle);
+    this.appWindow.webContents.send("toggle-virtual-cam-state", toggle);
   }
 }
 

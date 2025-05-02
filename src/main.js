@@ -3,7 +3,6 @@ import { app, screen, ipcMain } from "electron";
 import path from "path";
 import treeKill from "tree-kill";
 import { installExtension, VUEJS_DEVTOOLS } from "electron-devtools-installer";
-// import OBSController from "./controllers/OBSController.js";
 import AppWindowController from "./controllers/AppWindowController.js";
 import FullScreenWindowsController from "./controllers/FullScreenWindowController.js";
 import VirtualCameraController from "./controllers/VirtualCameraController.js";
@@ -13,59 +12,71 @@ const preloader = path.join(__dirname, "preload.js");
 let pythonExec;
 let pythonExecPath;
 
-if (app.isPackaged) {
-  pythonExecPath = path.join(process.resourcesPath, "main.exe");
-  pythonExec = spawn(pythonExecPath, []);
-} else {
-  pythonExecPath = path.join(
-    app.getAppPath(),
-    "src",
-    "websocket",
-    "server",
-    "main.py"
-  );
-  pythonExec = spawn("python", [pythonExecPath], { shell: true });
-}
+// Function to start the Python WebSocket server
+const startPythonServer = () => {
+  try {
+    if (app.isPackaged) {
+      pythonExecPath = path.join(process.resourcesPath, "main.exe");
+      pythonExec = spawn(pythonExecPath, []);
+    } else {
+      pythonExecPath = path.join(
+        app.getAppPath(),
+        "src",
+        "websocket",
+        "server",
+        "main.py"
+      );
+      pythonExec = spawn("python", [pythonExecPath], { shell: true });
+    }
 
-pythonExec.stdout.on("data", (data) => {
-  console.log(`stdout: ${data}`);
-});
-pythonExec.stderr.on("data", (data) => {
-  console.error(`stderr: ${data}`);
-});
-pythonExec.on("close", (code) => {
-  console.log(`child process exited with code ${code}`);
-});
+    pythonExec.stdout.on("data", (data) => {
+      console.log(`Python Server stdout: ${data.toString().trim()}`);
+    });
 
+    pythonExec.stderr.on("data", (data) => {
+      console.error(`Python Server stderr: ${data.toString().trim()}`);
+    });
+
+    pythonExec.on("close", (code) => {
+      console.log(`Python Server exited with code ${code}`);
+      if (code !== 0) {
+        console.error(
+          "Python server exited unexpectedly. Check logs for details."
+        );
+      }
+    });
+  } catch (error) {
+    console.error("Failed to start Python WebSocket server:", error);
+  }
+};
+
+// Cleanup function to terminate the Python process
+const cleanupAndExit = () => {
+  if (pythonExec && !pythonExec.killed) {
+    treeKill(pythonExec.pid, "SIGTERM", (err) => {
+      if (err) {
+        console.error("Error killing Python process, force killing...", err);
+        treeKill(pythonExec.pid, "SIGKILL");
+      } else {
+        console.log("Python process terminated successfully.");
+      }
+    });
+  }
+  console.log("Cleanup completed.");
+};
+
+let fullScreenWindowsController;
+let virtualCameraController;
 let websocketClient;
 let virtualCamEnabled;
 
-// const obsController = new OBSController();
-const appWindowController = new AppWindowController(preloader);
-const fullScreenWindowsController = new FullScreenWindowsController(preloader);
-const virtualCameraController = new VirtualCameraController(
-  appWindowController
-);
-
-app.commandLine.appendSwitch("enable-features", "AudioOutputDevices");
-app.whenReady().then(() => {
-  if (!app.isPackaged) {
-    installExtension(VUEJS_DEVTOOLS)
-      .then((ext) => console.log(`Extension ${ext.name} installed`))
-      .catch((error) => console.log(`Unable to install extension:`, error));
-  }
-  appWindowController.init();
-});
-
+// IPC handlers
 ipcMain.on("open-fullscreen-window", (_event, displayId) => {
-  // Open on external monitor if desired
   const displays = screen.getAllDisplays();
   const externalDisplay = displays.find((d) => d.id === displayId);
-
   fullScreenWindowsController.init(externalDisplay);
 });
 
-// Listen for frame data from Window A and send to Window B
 ipcMain.on("frame-data", async (event, frame) => {
   fullScreenWindowsController.receiveFrames(frame);
 
@@ -73,7 +84,6 @@ ipcMain.on("frame-data", async (event, frame) => {
     websocketClient.connection.sendUTF(frame);
 });
 
-// close canvas windows
 ipcMain.on("close-window", () => {
   fullScreenWindowsController.closeWindow();
 });
@@ -81,11 +91,6 @@ ipcMain.on("close-window", () => {
 ipcMain.handle("get-displays", () => {
   const displays = screen.getAllDisplays();
   return displays;
-});
-
-ipcMain.handle("toggle-obs-virtual-cam", async (event, enableOBSVirtualCam) => {
-  // if (enableOBSVirtualCam) await obsController.initOBSHeadless();
-  // await obsController.toggleOBSVirtualCam(enableOBSVirtualCam);
 });
 
 ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
@@ -105,40 +110,41 @@ ipcMain.handle("toggle-virtual-cam", async (event, opts) => {
   }
 });
 
-// Define your cleanup function.
-const cleanupAndExit = () => {
-  // Kill the Python subprocess if running.
-  if (pythonExec && !pythonExec.killed) {
-    // Send SIGTERM to allow graceful shutdown.
-    treeKill(pythonExec.pid, "SIGTERM", (err) => {
-      if (err) {
-        console.error("Error killing process tree, force killing...", err);
-        treeKill(pythonExec.pid, "SIGKILL");
-      } else {
-        console.log("Python process killed successfully.");
-      }
-    });
-  }
-  console.log("Cleanup completed.");
-};
+// Start the Python server when the app is ready
+app.whenReady().then(() => {
+  startPythonServer();
 
-// Quit the app when all windows are closed (unless on macOS)
+  if (!app.isPackaged) {
+    installExtension(VUEJS_DEVTOOLS)
+      .then((ext) => console.log(`Extension ${ext.name} installed`))
+      .catch((error) => console.log(`Unable to install extension:`, error));
+  }
+
+  const appWindowController = new AppWindowController(preloader);
+  appWindowController.init();
+
+  fullScreenWindowsController = new FullScreenWindowsController(preloader);
+  virtualCameraController = new VirtualCameraController(
+    appWindowController.win
+  );
+});
+
+// Handle app lifecycle events
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-// Call cleanup when Electron is quitting.
 app.on("quit", () => {
   cleanupAndExit();
 });
 
-// Also listen for process signals (e.g. Ctrl+C)
 process.on("SIGINT", () => {
   console.log("Received SIGINT, initiating cleanup...");
   cleanupAndExit();
   app.quit();
   setTimeout(() => process.exit(0), 100);
 });
+
 process.on("SIGTERM", () => {
   console.log("Received SIGTERM, initiating cleanup...");
   cleanupAndExit();

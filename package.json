@@ -42,6 +42,9 @@
       }
     ]
   },
+  "engines": {
+    "node": "23.11.0"
+  },
   "keywords": [],
   "author": {
     "name": "JonJon",
